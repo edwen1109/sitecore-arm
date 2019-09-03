@@ -2,14 +2,12 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "variables": {
-    "webApiVersion": "2018-02-01",
-    "serverFarmApiVersion": "2018-02-01",
+    "webApiVersion": "2016-08-01",
+    "serverFarmApiVersion": "2016-09-01",
     "dbApiVersion": "2014-04-01-preview",
     "searchApiVersion": "2015-08-19",
     "redisApiVersion": "2016-04-01",
     "applicationInsightsApiVersion": "2015-05-01",
-    "certificateApiVersion": "2014-11-01",
-    "siteExtensionsVersion": "2015-04-01",
 
     "sqlServerNameTidy": "[toLower(trim(parameters('sqlServerName')))]",
 
@@ -24,54 +22,14 @@
     "applicationInsightsNameTidy": "[toLower(trim(parameters('applicationInsightsName')))]",
     "applicationInsightsPricePlanTidy": "[toLower(trim(parameters('applicationInsightsPricePlan')))]",
 
-    "siHostingPlanNameTidy": "[toLower(trim(parameters('siHostingPlanName')))]",
     "cmHostingPlanNameTidy": "[toLower(trim(parameters('cmHostingPlanName')))]",
     "cdHostingPlanNameTidy": "[toLower(trim(parameters('cdHostingPlanName')))]",
 
-    "siWebAppNameTidy": "[toLower(trim(parameters('siWebAppName')))]",
     "cmWebAppNameTidy": "[toLower(trim(parameters('cmWebAppName')))]",
     "cdWebAppNameTidy": "[toLower(trim(parameters('cdWebAppName')))]",
 
-    "useAse": "[not(empty(parameters('aseName')))]",
-    "aseResourceId": "[resourceId(parameters('aseResourceGroupName'), 'Microsoft.Web/hostingEnvironments', parameters('aseName'))]",
-    "hostingPlanProperties":{
-      "siProperties":{
-        "name": "[variables('siHostingPlanNameTidy')]"
-      },
-      "siPropertiesWithASE":{
-        "name": "[variables('siHostingPlanNameTidy')]",
-        "hostingEnvironmentProfile": {
-          "id": "[variables('aseResourceId')]"
-        }
-      },
-      "cmProperties":{
-        "name": "[variables('cmHostingPlanNameTidy')]"
-      },
-      "cmPropertiesWithASE":{
-        "name": "[variables('cmHostingPlanNameTidy')]",
-        "hostingEnvironmentProfile": {
-          "id": "[variables('aseResourceId')]"
-        }
-      },
-      "cdProperties":{
-        "name": "[variables('cdHostingPlanNameTidy')]"
-      },
-      "cdPropertiesWithASE":{
-        "name": "[variables('cdHostingPlanNameTidy')]",
-        "hostingEnvironmentProfile": {
-          "id": "[variables('aseResourceId')]"
-        }
-      },
-      "authCertificateHostingEnvironmentProfile": {
-        "id": "[variables('aseResourceId')]"
-      }
-    },
-
-    "authCertificateNameTidy": "[toLower(trim(parameters('authCertificateName')))]",
-
     "sitecoreTags": {
       "provider": "b51535c2-ab3e-4a68-95f8-e2e3c9a19299",
-      "si": "si",
       "cd": "cd",
       "cm": "cm",
       "core": "core",
@@ -89,6 +47,18 @@
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]"
+    },
+    "aseName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the App Service Environment"
+      }
+    },
+    "aseResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the resource group that the ASE resides in."
+      }
     },
     "sitecoreSKU": {
       "type": "string",
@@ -161,10 +131,6 @@
       "defaultValue": "[concat(parameters('deploymentId'), '-redis')]"
     },
 
-    "useApplicationInsights": {
-      "type": "bool",
-      "defaultValue": true
-    },
     "applicationInsightsName": {
       "type": "string",
       "defaultValue": "[concat(parameters('deploymentId'), '-ai')]"
@@ -178,26 +144,11 @@
       "minLength": 1,
       "defaultValue": "[concat(parameters('deploymentId'), '-ai-pp')]"
     },
-
-    "authCertificateName": {
+    "applicationInsightsDataVolumeCap": {
       "type": "string",
-      "minLength": 1,
-      "defaultValue": "[concat(parameters('deploymentId'), '-auth')]"
-    },
-    "authCertificateBlob": {
-      "type": "securestring",
-      "minLength": 1
-    },
-    "authCertificatePassword": {
-      "type": "securestring",
-      "minLength": 1
+      "defaultValue": ""
     },
 
-    "siHostingPlanName": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "[concat(parameters('deploymentId'), '-si-hp')]"
-    },
     "cmHostingPlanName": {
       "type": "string",
       "defaultValue": "[concat(parameters('deploymentId'), '-cm-hp')]"
@@ -207,11 +158,6 @@
       "defaultValue": "[concat(parameters('deploymentId'), '-cd-hp')]"
     },
 
-    "siWebAppName": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "[concat(parameters('deploymentId'), '-si')]"
-    },
     "cmWebAppName": {
       "type": "string",
       "defaultValue": "[concat(parameters('deploymentId'), '-cm')]"
@@ -220,32 +166,17 @@
       "type": "string",
       "defaultValue": "[concat(parameters('deploymentId'), '-cd')]"
     },
+
     "skuMap": {
       "type": "secureObject",
       "defaultValue": {
         "Extra Small": {
-          "siHostingPlan": {
-            "SkuName": "S2",
-            "SkuCapacity": 1
-          },
-          "siHostingPlanIsolated": {
-            "SkuName": "I1",
-            "SkuCapacity": 1
-          },
           "cmHostingPlan": {
-            "SkuName": "S3",
-            "SkuCapacity": 1
-          },
-          "cmHostingPlanIsolated": {
-            "SkuName": "I2",
+            "SkuName": "B3",
             "SkuCapacity": 1
           },
           "cdHostingPlan": {
-            "SkuName": "S2",
-            "SkuCapacity": 1
-          },
-          "cdHostingPlanIsolated": {
-            "SkuName": "I1",
+            "SkuName": "B2",
             "SkuCapacity": 1
           },
           "coreSqlDatabase": {
@@ -286,28 +217,12 @@
           }
         },
         "Small": {
-          "siHostingPlan": {
-            "SkuName": "S2",
-            "SkuCapacity": 1
-          },
-          "siHostingPlanIsolated": {
-            "SkuName": "I1",
-            "SkuCapacity": 1
-          },
           "cmHostingPlan": {
-            "SkuName": "S3",
-            "SkuCapacity": 1
-          },
-          "cmHostingPlanIsolated": {
-            "SkuName": "I2",
+            "SkuName": "B3",
             "SkuCapacity": 1
           },
           "cdHostingPlan": {
-            "SkuName": "S2",
-            "SkuCapacity": 2
-          },
-          "cdHostingPlanIsolated": {
-            "SkuName": "I2",
+            "SkuName": "B2",
             "SkuCapacity": 2
           },
           "coreSqlDatabase": {
@@ -348,29 +263,13 @@
           }
         },
         "Medium": {
-          "siHostingPlan": {
-            "SkuName": "S2",
-            "SkuCapacity": 1
-          },
-          "siHostingPlanIsolated": {
-            "SkuName": "I2",
-            "SkuCapacity": 1
-          },
           "cmHostingPlan": {
-            "SkuName": "S3",
-            "SkuCapacity": 1
-          },
-          "cmHostingPlanIsolated": {
-            "SkuName": "I2",
+            "SkuName": "B3",
             "SkuCapacity": 1
           },
           "cdHostingPlan": {
-            "SkuName": "S2",
+            "SkuName": "B2",
             "SkuCapacity": 3
-          },
-          "cdHostingPlanIsolated": {
-            "SkuName": "I2",
-            "SkuCapacity": 2
           },
           "coreSqlDatabase": {
             "Edition": "Standard",
@@ -394,7 +293,7 @@
           },
           "searchService": {
             "SkuName": "Standard",
-            "Partitions": 2,
+            "Partitions": 1,
             "Replicas": "[parameters('searchServiceReplicaCount')]"
           },
           "redisCache": {
@@ -410,29 +309,13 @@
           }
         },
         "Large": {
-          "siHostingPlan": {
-            "SkuName": "S2",
-            "SkuCapacity": 1
-          },
-          "siHostingPlanIsolated": {
-            "SkuName": "I2",
-            "SkuCapacity": 1
-          },
           "cmHostingPlan": {
-            "SkuName": "S3",
-            "SkuCapacity": 1
-          },
-          "cmHostingPlanIsolated": {
-            "SkuName": "I2",
+            "SkuName": "B3",
             "SkuCapacity": 1
           },
           "cdHostingPlan": {
             "SkuName": "S3",
             "SkuCapacity": 4
-          },
-          "cdHostingPlanIsolated": {
-            "SkuName": "I3",
-            "SkuCapacity": 2
           },
           "coreSqlDatabase": {
             "Edition": "Standard",
@@ -456,7 +339,7 @@
           },
           "searchService": {
             "SkuName": "Standard",
-            "Partitions": 3,
+            "Partitions": 1,
             "Replicas": "[parameters('searchServiceReplicaCount')]"
           },
           "redisCache": {
@@ -472,29 +355,13 @@
           }
         },
         "Extra Large": {
-          "siHostingPlan": {
-            "SkuName": "S2",
-            "SkuCapacity": 1
-          },
-          "siHostingPlanIsolated": {
-            "SkuName": "I2",
-            "SkuCapacity": 1
-          },
           "cmHostingPlan": {
-            "SkuName": "S3",
-            "SkuCapacity": 1
-          },
-          "cmHostingPlanIsolated": {
-            "SkuName": "I2",
+            "SkuName": "B3",
             "SkuCapacity": 1
           },
           "cdHostingPlan": {
             "SkuName": "S3",
             "SkuCapacity": 8
-          },
-          "cdHostingPlanIsolated": {
-            "SkuName": "I3",
-            "SkuCapacity": 4
           },
           "coreSqlDatabase": {
             "Edition": "Standard",
@@ -518,7 +385,7 @@
           },
           "searchService": {
             "SkuName": "Standard",
-            "Partitions": 3,
+            "Partitions": 1,
             "Replicas": "[parameters('searchServiceReplicaCount')]"
           },
           "redisCache": {
@@ -538,41 +405,22 @@
     "resourceSizes": {
       "type": "object",
       "defaultValue": "[parameters('skuMap')[parameters('sitecoreSKU')]]"
-    },
-    "aseName":{
-      "type": "string",
-      "defaultValue": ""
-    },
-    "aseResourceGroupName":{
-      "type": "string",
-      "defaultValue": "[resourceGroup().name]"
     }
   },
   "resources": [
     {
       "type": "Microsoft.Web/serverfarms",
-      "name": "[variables('siHostingPlanNameTidy')]",
-      "apiVersion": "[variables('serverFarmApiVersion')]",
-      "sku": {
-        "name": "[if(not(variables('useAse')), parameters('resourceSizes').siHostingPlan.SkuName, parameters('resourceSizes').siHostingPlanIsolated.SkuName)]",
-        "capacity": "[if(not(variables('useAse')), parameters('resourceSizes').siHostingPlan.SkuCapacity, parameters('resourceSizes').siHostingPlanIsolated.SkuCapacity)]"
-      },
-      "properties": "[if(not(variables('useAse')), variables('hostingPlanProperties').siProperties, variables('hostingPlanProperties').siPropertiesWithASE)]",
-      "location": "[parameters('location')]",
-      "tags": {
-        "provider": "[variables('sitecoreTags').provider]",
-        "logicalName": "[variables('sitecoreTags').si]"
-      }
-    },
-    {
-      "type": "Microsoft.Web/serverfarms",
       "name": "[variables('cmHostingPlanNameTidy')]",
       "apiVersion": "[variables('serverFarmApiVersion')]",
       "sku": {
-        "name": "[if(not(variables('useAse')), parameters('resourceSizes').cmHostingPlan.SkuName, parameters('resourceSizes').cmHostingPlanIsolated.SkuName)]",
-        "capacity": "[if(not(variables('useAse')), parameters('resourceSizes').cmHostingPlan.SkuCapacity, parameters('resourceSizes').cmHostingPlanIsolated.SkuCapacity)]"
+        "name": "[parameters('resourceSizes').cmHostingPlan.SkuName]",
+        "capacity": "[parameters('resourceSizes').cmHostingPlan.SkuCapacity]"
       },
-      "properties": "[if(not(variables('useAse')), variables('hostingPlanProperties').cmProperties, variables('hostingPlanProperties').cmPropertiesWithASE)]",
+      "properties": {
+        "name": "[variables('cmHostingPlanNameTidy')]",
+        "hostingEnvironment": "[parameters('aseName')]",
+        "hostingEnvironmentId": "[resourceId(parameters('aseResourceGroupName'),'Microsoft.Web/hostingEnvironments', parameters('aseName'))]"
+      },
       "location": "[parameters('location')]",
       "tags": {
         "provider": "[variables('sitecoreTags').provider]",
@@ -584,52 +432,19 @@
       "name": "[variables('cdHostingPlanNameTidy')]",
       "apiVersion": "[variables('serverFarmApiVersion')]",
       "sku": {
-        "name": "[if(not(variables('useAse')), parameters('resourceSizes').cdHostingPlan.SkuName, parameters('resourceSizes').cdHostingPlanIsolated.SkuName)]",
-        "capacity": "[if(not(variables('useAse')), parameters('resourceSizes').cdHostingPlan.SkuCapacity, parameters('resourceSizes').cdHostingPlanIsolated.SkuCapacity)]"
+        "name": "[parameters('resourceSizes').cdHostingPlan.SkuName]",
+        "capacity": "[parameters('resourceSizes').cdHostingPlan.SkuCapacity]"
       },
-      "properties": "[if(not(variables('useAse')), variables('hostingPlanProperties').cdProperties, variables('hostingPlanProperties').cdPropertiesWithASE)]",
+      "properties": {
+        "name": "[variables('cdHostingPlanNameTidy')]",
+        "hostingEnvironment": "[parameters('aseName')]",
+        "hostingEnvironmentId": "[resourceId(parameters('aseResourceGroupName'),'Microsoft.Web/hostingEnvironments', parameters('aseName'))]"
+      },
       "location": "[parameters('location')]",
       "tags": {
         "provider": "[variables('sitecoreTags').provider]",
         "logicalName": "[variables('sitecoreTags').cd]"
       }
-    },
-    {
-      "type": "Microsoft.Web/sites",
-      "name": "[variables('siWebAppNameTidy')]",
-      "location": "[parameters('location')]",
-      "apiVersion": "[variables('webApiVersion')]",
-      "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('siHostingPlanNameTidy'))]",
-        "siteConfig": {
-          "use32BitWorkerProcess": false,
-          "alwaysOn": true,
-          "phpVersion": "",
-          "defaultDocuments": [
-            "index.html"
-          ]
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('siHostingPlanNameTidy'))]"
-      ],
-      "tags": {
-        "provider": "[variables('sitecoreTags').provider]",
-        "logicalName": "[variables('sitecoreTags').si]"
-      },
-      "resources": [
-        {
-          "type": "siteextensions",
-          "name": "AspNetCoreRuntime",
-          "apiVersion": "[variables('siteExtensionsVersion')]",
-          "location": "[resourceGroup().location]",
-          "properties": {
-          },
-          "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', variables('siWebAppNameTidy'))]"
-          ]
-        }
-      ]
     },
     {
       "type": "Microsoft.Web/sites",
@@ -826,25 +641,6 @@
       ]
     },
     {
-      "type": "Microsoft.Web/certificates",
-      "name": "[variables('authCertificateNameTidy')]",
-      "apiVersion": "[variables('certificateApiVersion')]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('siHostingPlanNameTidy'))]",
-        "[resourceId('Microsoft.Web/serverfarms', variables('cmHostingPlanNameTidy'))]",
-        "[resourceId('Microsoft.Web/serverfarms', variables('cdHostingPlanNameTidy'))]"
-      ],
-      "properties": {
-        "password": "[parameters('authCertificatePassword')]",
-        "pfxBlob": "[parameters('authCertificateBlob')]",
-        "hostingEnvironmentProfile": "[if(variables('useAse'), variables('hostingPlanProperties').authCertificateHostingEnvironmentProfile, '')]"
-      },
-      "tags": {
-        "provider": "[variables('sitecoreTags').provider]"
-      }
-    },
-    {
       "type": "Microsoft.Search/searchServices",
       "condition": "[parameters('deployAzureSearch')]",
       "apiVersion": "[variables('searchApiVersion')]",
@@ -880,7 +676,6 @@
     },
     {
       "type": "Microsoft.Insights/Components",
-      "condition": "[parameters('useApplicationInsights')]",
       "name": "[variables('applicationInsightsNameTidy')]",
       "apiVersion": "[variables('applicationInsightsApiVersion')]",
       "location": "[parameters('applicationInsightsLocation')]",
@@ -894,14 +689,13 @@
     },
     {
       "type": "Microsoft.Insights/Components/CurrentBillingFeatures",
-      "condition": "[parameters('useApplicationInsights')]",
       "name": "[concat(variables('applicationInsightsNameTidy'), '/', variables('applicationInsightsPricePlanTidy'))]",
       "location": "[parameters('applicationInsightsLocation')]",
       "apiVersion": "[variables('applicationInsightsApiVersion')]",
       "properties": {
         "CurrentBillingFeatures": "[parameters('resourceSizes').applicationInsightsPricePlan.CurrentBillingFeatures]",
         "DataVolumeCap": {
-          "Cap": "[parameters('resourceSizes').applicationInsightsPricePlan.DataVolumeCap.Cap]"
+          "Cap": "[if(empty(parameters('applicationInsightsDataVolumeCap')), parameters('resourceSizes').applicationInsightsPricePlan.DataVolumeCap.Cap, float(parameters('applicationInsightsDataVolumeCap')))]"
         }
       },
       "dependsOn": [
@@ -916,9 +710,6 @@
     "infrastructure": {
       "type": "object",
       "value": {
-        "authCertificateThumbprint": "[reference(resourceId('Microsoft.Web/certificates', variables('authCertificateNameTidy'))).thumbprint]",
-        "siWebAppHostName": "[reference(concat('Microsoft.Web/sites/', variables('siWebAppNameTidy')), variables('webApiVersion')).defaultHostName]",
-        "cmWebAppHostName": "[reference(concat('Microsoft.Web/sites/', variables('cmWebAppNameTidy')), variables('webApiVersion')).defaultHostName]",
         "sqlServerFqdn": "[reference(concat('Microsoft.Sql/servers/', variables('sqlServerNameTidy'))).fullyQualifiedDomainName]"
       }
     }
