@@ -264,11 +264,11 @@
         },
         "Medium": {
           "cmHostingPlan": {
-            "SkuName": "B3",
+            "SkuName": "I2",
             "SkuCapacity": 1
           },
           "cdHostingPlan": {
-            "SkuName": "B2",
+            "SkuName": "I2",
             "SkuCapacity": 3
           },
           "coreSqlDatabase": {
