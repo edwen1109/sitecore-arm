@@ -172,12 +172,12 @@
       "defaultValue": {
         "Extra Small": {
           "cmHostingPlan": {
-            "SkuName": "I1",
+            "SkuName": "I2",
             "SkuCapacity": 1
           },
           "cdHostingPlan": {
-            "SkuName": "I1",
-            "SkuCapacity": 1
+            "SkuName": "I2",
+            "SkuCapacity": 3
           },
           "coreSqlDatabase": {
             "Edition": "Standard",
