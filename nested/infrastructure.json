@@ -177,7 +177,7 @@
           },
           "cdHostingPlan": {
             "SkuName": "I2",
-            "SkuCapacity": 3
+            "SkuCapacity": 1
           },
           "coreSqlDatabase": {
             "Edition": "Standard",
